@@ -9,16 +9,12 @@ import { Logo } from "@/components/Logo";
 import { MediaTypeSelector } from "@/components/MediaTypeSelector";
 import { plexApi, sessionsApi } from "@/lib/api";
 import { saveLocalSession } from "@/lib/sessionStore";
+import { saveUserIdentity, getUserIdentity, clearUserIdentity, validatePlexToken } from "@/lib/userStore";
+import type { PlexUser } from "@/lib/userStore";
 import { toast } from "sonner";
 import { useHaptics } from "@/hooks/useHaptics";
 import { usePlexOAuth } from "@/hooks/usePlexOAuth";
 import { cn } from "@/lib/utils";
-
-interface PlexUser {
-  username: string;
-  email: string;
-  thumb: string;
-}
 
 const CreateSession = () => {
   const navigate = useNavigate();
@@ -53,6 +49,7 @@ const CreateSession = () => {
       setPlexToken(token);
       setDisplayName(user.username || "");
       setJoinAsGuest(false);
+      saveUserIdentity({ type: 'plex', displayName: user.username || "", plexToken: token, plexUser: user });
       toast.success(`Signed in as ${user.username}!`);
     },
     onError: (error) => {
@@ -60,6 +57,29 @@ const CreateSession = () => {
       setJoinAsGuest(true);
     },
   });
+
+  // Restore saved user identity on mount
+  useEffect(() => {
+    const stored = getUserIdentity();
+    if (!stored) return;
+
+    setDisplayName(stored.displayName);
+
+    if (stored.type === 'plex' && stored.plexToken && stored.plexUser) {
+      // Validate the stored token is still valid
+      validatePlexToken(stored.plexToken).then((user) => {
+        if (user) {
+          setPlexUser(user);
+          setPlexToken(stored.plexToken!);
+          setJoinAsGuest(false);
+          // Keep the user's custom display name, only update plexUser info
+          saveUserIdentity({ type: 'plex', displayName: stored.displayName, plexToken: stored.plexToken!, plexUser: user });
+        } else {
+          clearUserIdentity();
+        }
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (plexToken && !joinAsGuest) {
@@ -133,6 +153,13 @@ const CreateSession = () => {
         createData.useWatchlist = true;
       }
 
+      // Persist display name (may differ from Plex username)
+      if (joinAsGuest) {
+        saveUserIdentity({ type: 'guest', displayName: displayName.trim() });
+      } else if (plexToken && plexUser) {
+        saveUserIdentity({ type: 'plex', displayName: displayName.trim(), plexToken, plexUser });
+      }
+
       console.log("[CreateSession] Creating session with data:", {
         ...createData,
         plexToken: createData.plexToken ? "[REDACTED]" : undefined,
@@ -167,6 +194,7 @@ const CreateSession = () => {
     setPlexUser(null);
     setPlexToken(null);
     setUseWatchlist(false);
+    clearUserIdentity();
     cancelPlexLogin();
   };
 

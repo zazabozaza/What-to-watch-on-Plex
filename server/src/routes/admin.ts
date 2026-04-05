@@ -346,6 +346,7 @@ router.post('/get-session-settings', (req, res) => {
           enable_lobby_qr: settings.enable_lobby_qr,
           enable_chat: settings.enable_chat,
           auto_cache_refresh: settings.auto_cache_refresh,
+          hard_filter_preferences: settings.hard_filter_preferences,
         }
       });
     } else {
