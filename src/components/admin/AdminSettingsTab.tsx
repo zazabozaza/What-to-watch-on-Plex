@@ -1,7 +1,7 @@
 // File: src/components/admin/AdminSettingsTab.tsx
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Save, Shuffle, ListOrdered, Hash, Upload, Trash2, Image, ExternalLink, Tag, X, Plus, Star, QrCode, Smartphone, Type, AlertTriangle } from "lucide-react";
+import { Loader2, Save, Shuffle, ListOrdered, Hash, Upload, Trash2, Image, ExternalLink, Tag, X, Plus, Star, QrCode, Smartphone, Type, AlertTriangle, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -21,6 +21,7 @@ interface SessionSettings {
   restricted_labels: string[];
   rating_display: "critic" | "audience" | "both";
   enable_lobby_qr: boolean;
+  hard_filter_preferences: boolean;
 }
 
 const DEFAULT_SETTINGS: SessionSettings = {
@@ -34,6 +35,7 @@ const DEFAULT_SETTINGS: SessionSettings = {
   restricted_labels: [],
   rating_display: "critic",
   enable_lobby_qr: false,
+  hard_filter_preferences: true,
 };
 
 interface PwaSettings {
@@ -101,6 +103,7 @@ export const AdminSettingsTab = () => {
           restricted_labels: data.settings.restricted_labels || [],
           rating_display: data.settings.rating_display || "critic",
           enable_lobby_qr: data.settings.enable_lobby_qr ?? false,
+          hard_filter_preferences: data.settings.hard_filter_preferences ?? true,
         });
       }
     } catch (err) {
@@ -586,6 +589,33 @@ export const AdminSettingsTab = () => {
             <span className="font-medium text-foreground">Fixed</span>
             <span className="text-xs text-muted-foreground text-center">Same for all users</span>
           </button>
+        </div>
+      </motion.div>
+
+      {/* Hard Filter Preferences Toggle */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="glass-card rounded-xl p-4"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <Filter size={20} className="text-primary" />
+              <h2 className="font-semibold text-foreground">Hard Filter Preferences</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              When enabled, preferred selections (green) strictly filter results. When disabled, preferences boost item priority but non-matching items may still appear.
+            </p>
+          </div>
+          <Switch
+            checked={settings.hard_filter_preferences}
+            onCheckedChange={(checked) => {
+              haptics.selection();
+              setSettings(s => ({ ...s, hard_filter_preferences: checked }));
+            }}
+          />
         </div>
       </motion.div>
 

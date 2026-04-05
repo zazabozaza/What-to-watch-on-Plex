@@ -67,6 +67,11 @@ _What to Watch on Plex_ is available on the Unraid Community Apps store as _wtwp
 Click install and apply the default template.
 <img width="359" height="122" alt="Image" src="https://github.com/user-attachments/assets/b546fdfb-e6c0-49f3-a1ea-2022687ceb17" />
 
+Make sure to add a CORS_ORIGINS environment variable.
+Key: CORS_ORIGINS
+Value: A comma-separated list of the allowed origins, e.g.: 
+http://192.168.1.100:PORT,https://wtw.yourdomain.com
+
 ---
 
 ## Configuration
@@ -92,6 +97,7 @@ Only requests from allowed domains will be accepted.
 - **Suggestion Order:**
   - `Random` (suggestions appear randomly for each user).
   - `Fixed` (everyone gets the same suggestions in the same order).
+- **Hard Filter Preferences:** When enabled, preferred selections (green) strictly filter results. When disabled, preferences boost item priority but non-matching items may still appear.
 - **Collections:** Enable a collection picker for the host when creating a session. Only items from selected collections will be suggested.
 - **Open in Plex Button:** Enables a button on the match winner page to open the item in Plex. Only works by opening Plex in a browser tab.
 - **Lobby QR Code:** Display a QR code in the lobby for easy session joining.

@@ -8,16 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/Logo";
 import { sessionsApi } from "@/lib/api";
 import { saveLocalSession } from "@/lib/sessionStore";
+import { saveUserIdentity, getUserIdentity, clearUserIdentity, validatePlexToken } from "@/lib/userStore";
+import type { PlexUser } from "@/lib/userStore";
 import { toast } from "sonner";
 import { useHaptics } from "@/hooks/useHaptics";
 import { usePlexOAuth } from "@/hooks/usePlexOAuth";
 import { cn } from "@/lib/utils";
-
-interface PlexUser {
-  username: string;
-  email: string;
-  thumb: string;
-}
 
 const JoinSession = () => {
   const navigate = useNavigate();
@@ -44,6 +40,7 @@ const JoinSession = () => {
       setPlexToken(token);
       setDisplayName(user.username || "");
       setJoinAsGuest(false);
+      saveUserIdentity({ type: 'plex', displayName: user.username || "", plexToken: token, plexUser: user });
       toast.success(`Signed in as ${user.username}!`);
     },
     onError: (error) => {
@@ -57,6 +54,28 @@ const JoinSession = () => {
       checkSession();
     }
   }, [code]);
+
+  // Restore saved user identity on mount
+  useEffect(() => {
+    const stored = getUserIdentity();
+    if (!stored) return;
+
+    setDisplayName(stored.displayName);
+
+    if (stored.type === 'plex' && stored.plexToken && stored.plexUser) {
+      validatePlexToken(stored.plexToken).then((user) => {
+        if (user) {
+          setPlexUser(user);
+          setPlexToken(stored.plexToken!);
+          setJoinAsGuest(false);
+          // Keep the user's custom display name, only update plexUser info
+          saveUserIdentity({ type: 'plex', displayName: stored.displayName, plexToken: stored.plexToken!, plexUser: user });
+        } else {
+          clearUserIdentity();
+        }
+      });
+    }
+  }, []);
 
   const checkSession = async () => {
     try {
@@ -101,6 +120,13 @@ const JoinSession = () => {
         throw new Error("Session not found");
       }
 
+      // Persist display name (may differ from Plex username)
+      if (joinAsGuest) {
+        saveUserIdentity({ type: 'guest', displayName: displayName.trim() });
+      } else if (plexToken && plexUser) {
+        saveUserIdentity({ type: 'plex', displayName: displayName.trim(), plexToken, plexUser });
+      }
+
       const { data, error } = await sessionsApi.join(sessionData.session.id, {
         displayName: displayName.trim(),
         isGuest: joinAsGuest,
@@ -133,6 +159,7 @@ const JoinSession = () => {
     setJoinAsGuest(true);
     setPlexUser(null);
     setPlexToken(null);
+    clearUserIdentity();
     cancelPlexLogin();
   };
 

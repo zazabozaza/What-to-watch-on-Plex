@@ -193,39 +193,43 @@ function matchesEra(year: number, era: string): boolean {
 
 // Score an item based on how well it matches preferences (higher = better match)
 // Items matching MORE preferred criteria are scored higher and appear sooner.
-function scoreItem(item: any, filters: any): number {
+// When boosted=true (hard filter OFF), weights are much higher to strongly push
+// non-matching items to the bottom of the list.
+function scoreItem(item: any, filters: any, boosted: boolean = false): number {
   let score = 0;
-  
+
   const itemGenres = item.genres || [];
   const year = item.year;
   const itemLanguages = item.languages || [];
-  
-  // Genre scoring: each matching genre adds points.
-  // This means an item matching 2 preferred genres (e.g. comedy + horror) scores higher than an item matching only 1.
+
+  const genreBase = boosted ? 200 : 50;
+  const genrePer = boosted ? 100 : 50;
+  const eraBase = boosted ? 200 : 25;
+  const eraPer = boosted ? 100 : 25;
+  const langBase = boosted ? 200 : 35;
+  const langPer = boosted ? 100 : 40;
+
   if (filters.genres?.length > 0 && itemGenres.length > 0) {
     const genreMatches = countMatchingGenres(itemGenres, filters.genres);
     if (genreMatches > 0) {
-      // Base score for matching at least one genre, plus bonus per additional match
-      score += 50 + (genreMatches * 50);
+      score += genreBase + (genreMatches * genrePer);
     }
   }
-  
-  // Era scoring: each matching era adds points
+
   if (filters.eras?.length > 0 && year) {
     const eraMatches = countMatchingEras(year, filters.eras);
     if (eraMatches > 0) {
-      score += 25 + (eraMatches * 25);
+      score += eraBase + (eraMatches * eraPer);
     }
   }
-  
-  // Language scoring: each matching language adds points
+
   if (filters.languages?.length > 0) {
     const langMatches = countMatchingLanguages(itemLanguages, filters.languages);
     if (langMatches > 0) {
-      score += 35 + (langMatches * 40);
+      score += langBase + (langMatches * langPer);
     }
   }
-  
+
   return score;
 }
 
@@ -489,10 +493,12 @@ const Swipe = () => {
 
       // Load admin settings
       let currentLabelRestrictions = labelRestrictionsRef.current;
+      let hardFilterPreferences = true;
       try {
         const { data: settingsData } = await adminApi.getSessionSettings();
         if (settingsData?.settings) {
           setRatingDisplay(settingsData.settings.rating_display || 'critic');
+          hardFilterPreferences = settingsData.settings.hard_filter_preferences ?? true;
           if (settingsData.settings.enable_label_restrictions) {
             currentLabelRestrictions = {
               enabled: true,
@@ -547,7 +553,7 @@ const Swipe = () => {
           setLoadingMessage("Fetching media from Plex...");
           const { data: mediaData } = await plexApi.getMedia(
             mediaType || 'both',
-            aggregatedFilters
+            { ...aggregatedFilters, hardFilterPreferences }
           );
           fetchedItems = mediaData?.items || [];
           console.log(`[Swipe] Loaded ${fetchedItems.length} items from Plex API`);
@@ -636,13 +642,45 @@ const Swipe = () => {
         console.log(`[Swipe] After exclusion filters: ${fetchedItems.length} items (removed ${beforeCount - fetchedItems.length})`);
       }
 
-      setLoadingMessage("Preparing suggestions...");
-      
+      // Apply HARD filters for preferences (green selections) when enabled
       const hasPreferences = aggregatedFilters && (
         (aggregatedFilters.genres?.length > 0) ||
         (aggregatedFilters.eras?.length > 0) ||
         (aggregatedFilters.languages?.length > 0)
       );
+
+      if (hardFilterPreferences && hasPreferences) {
+        const beforeCount = fetchedItems.length;
+        fetchedItems = fetchedItems.filter((item: any) => {
+          const itemGenres = item.genres || [];
+          const year = item.year;
+          const itemLanguages = item.languages || [];
+
+          if (aggregatedFilters.genres && aggregatedFilters.genres.length > 0 && itemGenres.length > 0) {
+            if (!itemMatchesGenres(itemGenres, aggregatedFilters.genres)) {
+              return false;
+            }
+          }
+
+          if (aggregatedFilters.eras && aggregatedFilters.eras.length > 0 && year) {
+            if (!aggregatedFilters.eras.some((era: string) => matchesEra(year, era))) {
+              return false;
+            }
+          }
+
+          if (aggregatedFilters.languages && aggregatedFilters.languages.length > 0 && itemLanguages.length > 0) {
+            const normalizedItemLangs = itemLanguages.map(normalizeLanguage);
+            if (!aggregatedFilters.languages.some((l: string) => normalizedItemLangs.includes(normalizeLanguage(l)))) {
+              return false;
+            }
+          }
+
+          return true;
+        });
+        console.log(`[Swipe] After preference filters: ${fetchedItems.length} items (removed ${beforeCount - fetchedItems.length})`);
+      }
+
+      setLoadingMessage("Preparing suggestions...");
 
       // Transform items and add scores
       const transformedItems: (PlexItem & { _score: number })[] = fetchedItems.map((item: any) => ({
@@ -662,7 +700,7 @@ const Swipe = () => {
         studio: item.studio,
         audienceRating: item.audienceRating,
         languages: item.languages || [],
-        _score: hasPreferences ? scoreItem(item, aggregatedFilters) : 0,
+        _score: hasPreferences ? scoreItem(item, aggregatedFilters, !hardFilterPreferences) : 0,
       }));
 
       let orderedItems: (PlexItem & { _score: number })[];

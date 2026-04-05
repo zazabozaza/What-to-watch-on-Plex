@@ -2198,32 +2198,56 @@ function applyFilters(items: any[], filters: any): any[] {
     const itemGenres = item.genres || item.Genre?.map((g: any) => g.tag) || [];
     const year = item.year;
     const itemLanguages = item.languages || [];
-    
+
+    // Exclusion filters (hard remove)
     if (filters.excludedGenres?.length > 0) {
       if (filters.excludedGenres.some((g: string) => itemGenres.includes(g))) return false;
     }
-    
+
     if (filters.excludedEras?.length > 0 && year) {
       if (filters.excludedEras.some((era: string) => matchesEra(year, era))) return false;
     }
-    
+
     if (filters.excludedLanguages?.length > 0 && itemLanguages.length > 0) {
       if (filters.excludedLanguages.some((l: string) => itemLanguages.includes(l))) return false;
     }
-    
+
+    // Preference filters (only show matching items)
+    if (filters.hardFilterPreferences) {
+      if (filters.genres?.length > 0 && itemGenres.length > 0) {
+        if (!filters.genres.some((g: string) => itemGenres.includes(g))) return false;
+      }
+
+      if (filters.eras?.length > 0 && year) {
+        if (!filters.eras.some((era: string) => matchesEra(year, era))) return false;
+      }
+
+      if (filters.languages?.length > 0 && itemLanguages.length > 0) {
+        if (!filters.languages.some((l: string) => itemLanguages.includes(l))) return false;
+      }
+    }
+
     return true;
   });
 }
 
 function matchesEra(year: number, era: string): boolean {
   const currentYear = new Date().getFullYear();
+  const currentDate = new Date();
+  const sixMonthsAgo = new Date(currentDate);
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const sixMonthsAgoYear = sixMonthsAgo.getFullYear();
+
   switch (era) {
+    case '6months': return year >= sixMonthsAgoYear && year <= currentYear;
+    case '2years': return year >= currentYear - 2;
     case 'recent': return year >= currentYear - 2;
     case '2020s': return year >= 2020;
     case '2010s': return year >= 2010 && year < 2020;
     case '2000s': return year >= 2000 && year < 2010;
     case '90s': return year >= 1990 && year < 2000;
-    case 'classic': return year < 1990;
+    case '80s': return year >= 1980 && year < 1990;
+    case 'classic': return year < 1980;
     default: return false;
   }
 }
