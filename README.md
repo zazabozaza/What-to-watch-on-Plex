@@ -49,7 +49,12 @@ Main Features:
 ---
 
 ### Quick Start
-1. Download the `docker-compose.yml` file from this repository. Edit the port and timezone if needed
+1. Download the `docker-compose.yml` file from this repository. Edit the port, timezone and `CORS_ORIGINS` as needed.
+> [!NOTE]
+>`CORS_ORIGINS` determines the allowed origins for accessing WTW<br>
+>Add a comma-separated list of the allowed origins, e.g.:<br>
+>e.g.: `- CORS_ORIGINS=http://192.168.1.100:PORT,https://wtw.yourdomain.com`
+
 2. Pull the latest image:
 ```bash
 docker compose pull
@@ -63,14 +68,11 @@ docker compose up -d
 ---
 
 ### UNRAID
-_What to Watch on Plex_ is available on the Unraid Community Apps store as _wtwp_.
-Click install and apply the default template.
+_What to Watch on Plex_ is available on the Unraid Community Apps store as _wtwp_.<br>
+Click install and apply the default template.<br>
 <img width="359" height="122" alt="Image" src="https://github.com/user-attachments/assets/b546fdfb-e6c0-49f3-a1ea-2022687ceb17" />
 
-Make sure to add a CORS_ORIGINS environment variable.
-Key: CORS_ORIGINS
-Value: A comma-separated list of the allowed origins, e.g.: 
-http://192.168.1.100:PORT,https://wtw.yourdomain.com
+Make sure to add a `CORS_ORIGINS` environment variable.
 
 ---
 
@@ -85,6 +87,7 @@ http://192.168.1.100:PORT,https://wtw.yourdomain.com
 ### Allowed Domains
 If you access this app through a custom domain or reverse proxy (e.g. wtw.mydomain.com), add it here.
 Only requests from allowed domains will be accepted.
+Equivalent to the `CORS_ORIGINS` environment variable, but managed at runtime without restarting the container. Setting either one is enough.
 
 ### Optional Settings
 
@@ -115,6 +118,9 @@ If you are behind a reverse proxy, you need to enable websocket support. [Nginx 
 
 ### ❌ I can't start a session/ "No Media Found":
 You first need to build a cache in settings. See step 4 above. Don't forget to click 'Save Settings' after connecting to Plex before refreshing cache.
+
+### ❌ I get a blank page when accessing the webUI:
+You need to add your hostname/ip to `CORS_ORIGINS` in the docker compose.
 
 ---  
 
