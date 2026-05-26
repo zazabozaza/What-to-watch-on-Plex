@@ -285,6 +285,7 @@ export interface VersionInfo {
   currentVersion: string;
   latestVersion: string | null;
   updateAvailable: boolean;
+  isDevelopBuild: boolean;
   releaseUrl: string | null;
   releaseNotes: string | null;
   publishedAt: string | null;
