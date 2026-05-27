@@ -102,12 +102,13 @@ function formatBucketLabel(iso: string, unit: Unit): string {
 }
 
 export const StatisticsTab = () => {
-  const [amount, setAmount] = useState(30);
+  const [amount, setAmount] = useState<number | "">(30);
   const [unit, setUnit] = useState<Unit>("days");
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (amount === "" || amount < 1) return;
     const t = setTimeout(() => loadStats(amount, unit), 200);
     return () => clearTimeout(t);
   }, [amount, unit]);
@@ -185,12 +186,22 @@ export const StatisticsTab = () => {
         <div className="flex items-center gap-2">
           <Input
             type="number"
+            inputMode="numeric"
             min={1}
             max={999}
             value={amount}
             onChange={(e) => {
-              const n = parseInt(e.target.value);
-              setAmount(isNaN(n) ? 1 : Math.max(1, Math.min(999, n)));
+              const v = e.target.value;
+              if (v === "") {
+                setAmount("");
+                return;
+              }
+              const n = parseInt(v, 10);
+              if (Number.isNaN(n)) return;
+              setAmount(Math.min(999, Math.max(0, n)));
+            }}
+            onBlur={() => {
+              if (amount === "" || amount < 1) setAmount(1);
             }}
             className="w-24 bg-secondary border-secondary"
           />
