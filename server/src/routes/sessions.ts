@@ -5,6 +5,7 @@ import { getDb, generateId } from '../db.js';
 import { broadcastToSession } from '../websocket.js';
 import { encryptToken } from '../services/encryption.js';
 import { verifyPlexServerMembership } from './plex.js';
+const mediaMemoryCache = new Map<string, any[]>();
 
 function isPlexMemberGateEnabled(db: any): boolean {
   const row = db.prepare('SELECT value FROM app_config WHERE key = ?').get('session_settings') as { value: string } | undefined;
@@ -636,44 +637,53 @@ function checkForMatchServer(db: any, sessionId: string, itemKey: string): { isM
 // Record session in history
 function recordSessionHistory(db: any, sessionId: string, winnerItemKey: string | null) {
   try {
-    // Check if session_history table exists
     const tableExists = db.prepare(
       "SELECT name FROM sqlite_master WHERE type='table' AND name='session_history'"
     ).get();
-    
+
     if (!tableExists) {
       console.log('[Sessions] session_history table does not exist, skipping history recording');
       return;
     }
-    
+
     const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId) as any;
     const participants = db.prepare('SELECT display_name FROM session_participants WHERE session_id = ?').all(sessionId) as any[];
-    
+
     if (!session) return;
-    
-    // Get winner details from cache
+
     let winnerTitle = null;
     let winnerThumb = null;
-    
+
     if (winnerItemKey) {
       const configRow = db.prepare('SELECT value FROM app_config WHERE key = ?').get('plex') as { value: string } | undefined;
+
       if (configRow) {
         try {
           const config = JSON.parse(configRow.value);
           const sortedLibraryKeys = [...(config.libraries || [])].sort().join(',');
           const cacheType = session.media_type || 'both';
-          
-          const cached = db.prepare(
-            'SELECT items FROM media_items_cache WHERE library_keys = ? AND media_type = ?'
-          ).get(sortedLibraryKeys, cacheType) as { items: string } | undefined;
-          
-          if (cached?.items) {
-            const items = JSON.parse(cached.items);
-            const winner = items.find((item: any) => item.ratingKey === winnerItemKey);
-            if (winner) {
-              winnerTitle = winner.title;
-              winnerThumb = winner.thumb;
+          const memoryKey = `${sortedLibraryKeys}:${cacheType}`;
+
+          let items: any[] = [];
+
+          if (mediaMemoryCache.has(memoryKey)) {
+            items = mediaMemoryCache.get(memoryKey) || [];
+          } else {
+            const cached = db.prepare(
+              'SELECT items FROM media_items_cache WHERE library_keys = ? AND media_type = ?'
+            ).get(sortedLibraryKeys, cacheType) as { items: string } | undefined;
+
+            if (cached?.items) {
+              items = JSON.parse(cached.items);
+              mediaMemoryCache.set(memoryKey, items);
             }
+          }
+
+          const winner = items.find((item: any) => item.ratingKey === winnerItemKey);
+
+          if (winner) {
+            winnerTitle = winner.title;
+            winnerThumb = winner.thumb;
           }
         } catch (e) {
           console.error('[Sessions] Error getting winner details:', e);
@@ -965,28 +975,36 @@ router.get('/cache/media', (req, res) => {
   try {
     const { mediaType } = req.query;
     const db = getDb();
-    
-    // Get plex config for library keys
+
     const configRow = db.prepare('SELECT value FROM app_config WHERE key = ?').get('plex') as { value: string } | undefined;
     if (!configRow) {
       return res.json({ items: [] });
     }
-    
+
     const config = JSON.parse(configRow.value);
     const sortedLibraryKeys = [...(config.libraries || [])].sort().join(',');
-    
+
     const cacheType = mediaType === 'movies' ? 'movies' : mediaType === 'shows' ? 'shows' : 'both';
-    
+    const memoryKey = `${sortedLibraryKeys}:${cacheType}`;
+
+    if (mediaMemoryCache.has(memoryKey)) {
+      const items = mediaMemoryCache.get(memoryKey) || [];
+      console.log(`[Sessions] Returning ${items.length} memory cached items for type: ${cacheType}`);
+      return res.json({ items });
+    }
+
     const cached = db.prepare(
       'SELECT items FROM media_items_cache WHERE library_keys = ? AND media_type = ?'
     ).get(sortedLibraryKeys, cacheType) as { items: string } | undefined;
-    
+
     if (cached?.items) {
       const items = JSON.parse(cached.items);
+      mediaMemoryCache.set(memoryKey, items);
+
       console.log(`[Sessions] Returning ${items.length} cached items for type: ${cacheType}`);
       return res.json({ items });
     }
-    
+
     res.json({ items: [] });
   } catch (error) {
     console.error('Error getting cached media:', error);
