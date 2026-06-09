@@ -130,7 +130,7 @@ const CreateSession = () => {
   const handleCreate = async () => {
     if (!displayName.trim()) {
       haptics.error();
-      toast.error("Please enter your name");
+      toast.error("الرجاء إدخال الاسم");
       return;
     }
 
@@ -196,7 +196,7 @@ const CreateSession = () => {
     } catch (error) {
       console.error("Error creating session:", error);
       haptics.error();
-      toast.error("Failed to create session. Please try again.");
+      toast.error("تعذر إنشاء الجلسة. حاول مرة أخرى.");
     } finally {
       setIsCreating(false);
     }
@@ -244,8 +244,8 @@ const CreateSession = () => {
   if (isWaitingForAuth) {
     return (
       <div className="min-h-screen flex flex-col relative overflow-hidden">
-        <div className="fixed inset-0 bg-background">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        <div "fixed inset-0 bg-background">
+          <div "absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
         </div>
 
         <div className="relative z-10 p-4">
@@ -332,27 +332,27 @@ const CreateSession = () => {
           </div>
 
           <h1 className="text-2xl font-bold text-foreground text-center mb-2">
-            Create a Session
+            انشاء غرفة
           </h1>
           <p className="text-muted-foreground text-center mb-6">
-            Start a watch party and invite your friends
+            افتح غرفة مشاهدة واعزم ربعك
           </p>
 
           <div className="space-y-5">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Your Display Name
+                اسمك
               </label>
               <div className="relative">
                 <User
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                   size={20}
                 />
                 <Input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Enter your name"
-                  className="h-12 pl-10 bg-secondary border-secondary text-foreground placeholder:text-muted-foreground"
+                  placeholder="اكتب اسمك"
+                  className="h-12 pr-10 bg-secondary border-secondary text-foreground placeholder:text-muted-foreground"
                 />
               </div>
             </div>
@@ -398,7 +398,7 @@ const CreateSession = () => {
                     )}
                     size={24}
                   />
-                  <p className="font-medium text-foreground">Guest</p>
+                  <p className="font-medium text-foreground">ضيف</p>
                   <p className="text-xs text-muted-foreground">See all items</p>
                 </button>
                 <button
@@ -431,7 +431,7 @@ const CreateSession = () => {
                     />
                   )}
                   <p className="font-medium text-foreground">
-                    {plexUser ? plexUser.username : "Plex Login"}
+                    {plexUser ? plexUser.username : "تسجيل دخول Plex"}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {plexLoading
@@ -742,7 +742,7 @@ const CreateSession = () => {
                   Creating...
                 </>
               ) : (
-                "Create Session"
+                "انشاء غرفة"
               )}
             </Button>
           </div>
