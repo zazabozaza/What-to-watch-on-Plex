@@ -218,11 +218,3 @@
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
-html {
-  direction: rtl;
-}
-
-body {
-  direction: rtl;
-  text-align: right;
-}
