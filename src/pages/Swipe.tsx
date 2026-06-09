@@ -242,7 +242,7 @@ const Swipe = () => {
   const [items, setItems] = useState<PlexItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState("Loading session...");
+  const [loadingMessage, setLoadingMessage] = useState("جاري انشاء الغرفه...");
   const [waitingForQuestions, setWaitingForQuestions] = useState(false);
   const [questionsProgress, setQuestionsProgress] = useState({ completed: 0, total: 0 });
   const [sessionId, setSessionId] = useState<string | null>(null);
