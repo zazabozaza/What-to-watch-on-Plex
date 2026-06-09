@@ -15,7 +15,7 @@
     --popover: 220 18% 12%;
     --popover-foreground: 210 40% 96%;
 
-    --primary: 172 66% 50%;
+    --primary: 188 100% 55%;
     --primary-foreground: 220 20% 8%;
 
     --secondary: 220 18% 18%;
@@ -32,24 +32,24 @@
 
     --border: 220 14% 20%;
     --input: 220 14% 20%;
-    --ring: 172 66% 50%;
+    --ring: 188 100% 55%;
 
     --radius: 0.75rem;
 
     /* Custom tokens */
     --gradient-hero: linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 25% 15%) 50%, hsl(220 20% 8%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(220 18% 14%) 0%, hsl(220 18% 10%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(172 66% 50%) 0%, hsl(172 66% 40%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(188 100% 58%) 0%, hsl(190 100% 45%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(45 93% 58%) 0%, hsl(38 93% 50%) 100%);
     --gradient-glass: linear-gradient(135deg, hsla(220 18% 20% / 0.6) 0%, hsla(220 18% 15% / 0.4) 100%);
     
-    --shadow-glow: 0 0 30px hsla(172 66% 50% / 0.2);
+    --shadow-glow: 0 0 30px hsla(188 100% 55% / 0.28);
     --shadow-card: 0 8px 32px hsla(0 0% 0% / 0.4);
     --shadow-elevated: 0 20px 60px hsla(0 0% 0% / 0.5);
 
     --sidebar-background: 220 18% 10%;
     --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 172 66% 50%;
+    --sidebar-primary: 188 100% 55%;
     --sidebar-primary-foreground: 220 20% 8%;
     --sidebar-accent: 220 18% 18%;
     --sidebar-accent-foreground: 210 40% 96%;
@@ -182,8 +182,12 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px hsla(172, 66%, 50%, 0.2); }
-  50% { box-shadow: 0 0 40px hsla(172, 66%, 50%, 0.4); }
+  0%, 100% {
+    box-shadow: 0 0 20px hsla(188, 100%, 55%, 0.22);
+  }
+  50% {
+    box-shadow: 0 0 40px hsla(188, 100%, 55%, 0.42);
+  }
 }
 
 @keyframes shimmer {
@@ -208,7 +212,7 @@
   background: linear-gradient(
     90deg,
     hsla(220, 18%, 20%, 0) 0%,
-    hsla(220, 18%, 30%, 0.5) 50%,
+    hsla(188, 100%, 55%, 0.25)
     hsla(220, 18%, 20%, 0) 100%
   );
   background-size: 200% 100%;
