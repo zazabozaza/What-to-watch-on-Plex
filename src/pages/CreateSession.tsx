@@ -244,9 +244,9 @@ const CreateSession = () => {
   if (isWaitingForAuth) {
     return (
       <div className="min-h-screen flex flex-col relative overflow-hidden">
-        <div "fixed inset-0 bg-background">
-          <div "absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        </div>
+      <div className="fixed inset-0 bg-background">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+    </div>
 
         <div className="relative z-10 p-4">
           <Button
