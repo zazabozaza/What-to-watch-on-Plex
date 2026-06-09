@@ -805,7 +805,7 @@ const Swipe = () => {
 
     const initSession = async () => {
       try {
-        setLoadingMessage("Loading session...");
+        setLoadingMessage("جاري انشاء الغرفه...");
         
         const { data: sessionData, error: sessionError } = await sessionsApi.getByCode(code);
 
