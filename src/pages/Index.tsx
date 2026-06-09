@@ -45,17 +45,17 @@ const Index = () => {
         const { data } = await plexApi.verifyAccess(token);
         if (data?.hasAccess) {
           setAccessError(null);
-          toast.success(`Signed in as ${user.username}!`);
+          toast.success(`تم تسجيل الدخول باسم ${user.username}`);
           await refreshGate();
         } else {
           clearUserIdentity();
           setAccessError(
-            "This Plex account does not have access to the host's Plex server."
+            "هذا الحساب لا يملك صلاحية الوصول إلى خادم Plex"
           );
         }
       } catch (err) {
         clearUserIdentity();
-        setAccessError("Could not verify Plex access. Please try again.");
+        setAccessError("تعذر التحقق من صلاحية Plex، حاول مرة أخرى");
       } finally {
         setVerifyingAccess(false);
       }
@@ -159,22 +159,22 @@ const Index = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                Complete Login in Browser
+                إكمال تسجيل الدخول
               </h3>
               <p className="text-muted-foreground text-sm">
-                A new window should have opened. Complete the login there.
+                تم فتح نافذة جديدة. أكمل تسجيل الدخول هناك.
               </p>
             </div>
             <div className="flex flex-col gap-3">
               <Button variant="outline" onClick={openAuthAgain} className="w-full">
-                Open Login Page Again
+                فتح صفحة تسجيل الدخول مرة أخرى
               </Button>
               <Button
                 variant="ghost"
                 onClick={cancelPlexLogin}
                 className="w-full text-muted-foreground"
               >
-                Cancel
+                إلغاء
               </Button>
             </div>
           </motion.div>
@@ -210,10 +210,10 @@ const Index = () => {
                 transition={{ delay: 0.3 }}
                 className="text-base text-muted-foreground mb-8"
               >
-                Sign in with Plex to continue.
+                سجّل الدخول عبر Plex للمتابعة
                 <br />
                 <span className="text-xs">
-                  Access is limited to users of the host's Plex server.
+                  الوصول متاح فقط لمستخدمي خادم Plex الخاص بالمضيف
                 </span>
               </motion.p>
 
@@ -247,7 +247,7 @@ const Index = () => {
                   ) : (
                     <LogIn className="mr-2" size={22} />
                   )}
-                  {verifyingAccess ? "Verifying…" : "Sign in with Plex"}
+                  {verifyingAccess ? "جارٍ التحقق..." : "تسجيل الدخول عبر Plex"}
                 </Button>
 
                 {accessError && (
@@ -257,7 +257,7 @@ const Index = () => {
                     className="w-full h-12 border-secondary"
                   >
                     <LogOut className="mr-2" size={18} />
-                    Use a different Plex account
+                    استخدام حساب Plex آخر
                   </Button>
                 )}
               </motion.div>
@@ -270,7 +270,7 @@ const Index = () => {
                 transition={{ delay: 0.3 }}
                 className="text-lg text-muted-foreground mb-12"
               >
-                Swipe together. Watch together.
+                وش بنشوف الليلة؟
                 <Sparkles className="inline ml-2 w-5 h-5 text-accent" />
               </motion.p>
 
@@ -318,7 +318,7 @@ const Index = () => {
                         variant="outline"
                         className="flex-1 h-12 border-secondary text-muted-foreground hover:bg-secondary"
                       >
-                        Cancel
+                        إلغاء
                       </Button>
                       <Button
                         onClick={handleJoinSession}
