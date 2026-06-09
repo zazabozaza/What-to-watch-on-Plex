@@ -101,7 +101,7 @@ const Index = () => {
   const showWall = gated && !hasAccess;
 
   const adminGear = (
-    <div className="absolute top-4 right-4 z-20">
+    <div className="absolute right-3 top-1/2">
       <Button
         variant="ghost"
         size="icon"
@@ -286,7 +286,7 @@ const Index = () => {
                   className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground glow-primary"
                 >
                   <Plus className="mr-2" size={22} />
-                  Create Session
+                  إنشاء جلسة
                 </Button>
 
                 {!showJoinInput ? (
