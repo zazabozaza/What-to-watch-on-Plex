@@ -64,7 +64,7 @@
     --card-foreground: 210 40% 96%;
     --popover: 220 18% 12%;
     --popover-foreground: 210 40% 96%;
-    --primary: 172 66% 50%;
+    --primary: 188 100% 55%;
     --primary-foreground: 220 20% 8%;
     --secondary: 220 18% 18%;
     --secondary-foreground: 210 40% 96%;
@@ -76,7 +76,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 220 14% 20%;
     --input: 220 14% 20%;
-    --ring: 172 66% 50%;
+    --ring: 188 100% 55%;
   }
 }
 
@@ -212,7 +212,7 @@
   background: linear-gradient(
     90deg,
     hsla(220, 18%, 20%, 0) 0%,
-    hsla(188, 100%, 55%, 0.25)
+    hsla(188, 100%, 55%, 0.25) 50%,
     hsla(220, 18%, 20%, 0) 100%
   );
   background-size: 200% 100%;
