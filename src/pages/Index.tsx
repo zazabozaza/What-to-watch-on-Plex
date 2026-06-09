@@ -221,7 +221,7 @@ const Index = () => {
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm flex items-start gap-2 text-left"
+                  className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm flex items-start gap-2 text-start"
                 >
                   <ShieldAlert size={18} className="mt-0.5 shrink-0" />
                   <span>{accessError}</span>
@@ -297,7 +297,7 @@ const Index = () => {
                     className="w-full h-14 text-lg font-semibold border-secondary bg-secondary/50 text-foreground hover:bg-secondary"
                   >
                     <Users className="mr-2" size={22} />
-                    Join Session
+                    انضم لغرفة
                   </Button>
                 ) : (
                   <motion.div
@@ -308,8 +308,8 @@ const Index = () => {
                     <Input
                       value={joinCode}
                       onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
-                      placeholder="Enter 6-digit code"
-                      className="h-14 text-center text-xl font-mono tracking-widest bg-secondary border-secondary text-foreground placeholder:text-muted-foreground"
+                      placeholder="أدخل رمز الجلسة"
+                      className="h-14 text-center text-xl tracking-widest bg-secondary border-secondary text-foreground placeholder:text-muted-foreground"
                       maxLength={6}
                     />
                     <div className="flex gap-3">
@@ -327,7 +327,7 @@ const Index = () => {
                           "flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground"
                         )}
                       >
-                        Join
+                        ادخل
                       </Button>
                     </div>
                   </motion.div>
@@ -339,7 +339,7 @@ const Index = () => {
       </div>
 
       <div className="relative z-10 py-4 text-center">
-        <p className="text-xs text-muted-foreground">Powered by your Plex library</p>
+        <p className="text-xs text-muted-foreground">Vault Media</p>
       </div>
     </div>
   );
