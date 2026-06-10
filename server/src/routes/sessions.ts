@@ -951,7 +951,91 @@ router.get('/:id/final-votes', (req, res) => {
 
 // Get app config (for session settings)
 const SAFE_CONFIG_KEYS = new Set(['session_settings', 'pwa_settings']);
+// Get media items from cache
+router.get('/cache/media', (req, res) => {
+  try {
+    const { mediaType } = req.query;
+    const db = getDb();
 
+    const limit = Math.max(
+  50,
+  Math.min(Number(req.query.limit || 150), 500)
+);
+
+    const pickRandomItems = (items: any[], count: number) => {
+      if (items.length <= count) return items;
+
+      const copy = [...items];
+
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+
+      return copy.slice(0, count);
+    };
+
+    const configRow = db.prepare(
+      'SELECT value FROM app_config WHERE key = ?'
+    ).get('plex') as { value: string } | undefined;
+
+    if (!configRow) {
+      return res.json({ items: [] });
+    }
+
+    const config = JSON.parse(configRow.value);
+    const sortedLibraryKeys = [...(config.libraries || [])]
+      .sort()
+      .join(',');
+
+    const cacheType =
+      mediaType === 'movies'
+        ? 'movies'
+        : mediaType === 'shows'
+        ? 'shows'
+        : 'both';
+
+    const memoryKey = `${sortedLibraryKeys}:${cacheType}`;
+
+    if (mediaMemoryCache.has(memoryKey)) {
+      const items = mediaMemoryCache.get(memoryKey) || [];
+      const limitedItems = pickRandomItems(items, limit);
+
+      console.log(
+        `[Sessions] Returning ${limitedItems.length}/${items.length} memory cached items for type: ${cacheType}`
+      );
+
+      return res.json({ items: limitedItems });
+    }
+
+    const cached = db.prepare(
+      'SELECT items FROM media_items_cache WHERE library_keys = ? AND media_type = ?'
+    ).get(sortedLibraryKeys, cacheType) as
+      | { items: string }
+      | undefined;
+
+    if (cached?.items) {
+      const items = JSON.parse(cached.items);
+
+      mediaMemoryCache.set(memoryKey, items);
+
+      const limitedItems = pickRandomItems(items, limit);
+
+      console.log(
+        `[Sessions] Returning ${limitedItems.length}/${items.length} cached items for type: ${cacheType}`
+      );
+
+      return res.json({ items: limitedItems });
+    }
+
+    return res.json({ items: [] });
+  } catch (error) {
+    console.error('Error getting cached media:', error);
+    return res
+      .status(500)
+      .json({ error: 'Failed to get cached media' });
+  }
+});
 router.get('/config/:key', (req, res) => {
   try {
     const { key } = req.params;
@@ -967,48 +1051,6 @@ router.get('/config/:key', (req, res) => {
   } catch (error) {
     console.error('Error getting config:', error);
     res.status(500).json({ error: 'Failed to get config' });
-  }
-});
-
-// Get media items from cache
-router.get('/cache/media', (req, res) => {
-  try {
-    const { mediaType } = req.query;
-    const db = getDb();
-
-    const configRow = db.prepare('SELECT value FROM app_config WHERE key = ?').get('plex') as { value: string } | undefined;
-    if (!configRow) {
-      return res.json({ items: [] });
-    }
-
-    const config = JSON.parse(configRow.value);
-    const sortedLibraryKeys = [...(config.libraries || [])].sort().join(',');
-
-    const cacheType = mediaType === 'movies' ? 'movies' : mediaType === 'shows' ? 'shows' : 'both';
-    const memoryKey = `${sortedLibraryKeys}:${cacheType}`;
-
-    if (mediaMemoryCache.has(memoryKey)) {
-      const items = mediaMemoryCache.get(memoryKey) || [];
-      console.log(`[Sessions] Returning ${items.length} memory cached items for type: ${cacheType}`);
-      return res.json({ items });
-    }
-
-    const cached = db.prepare(
-      'SELECT items FROM media_items_cache WHERE library_keys = ? AND media_type = ?'
-    ).get(sortedLibraryKeys, cacheType) as { items: string } | undefined;
-
-    if (cached?.items) {
-      const items = JSON.parse(cached.items);
-      mediaMemoryCache.set(memoryKey, items);
-
-      console.log(`[Sessions] Returning ${items.length} cached items for type: ${cacheType}`);
-      return res.json({ items });
-    }
-
-    res.json({ items: [] });
-  } catch (error) {
-    console.error('Error getting cached media:', error);
-    res.status(500).json({ error: 'Failed to get cached media' });
   }
 });
 
